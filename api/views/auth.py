@@ -1,3 +1,5 @@
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -16,6 +18,23 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+    @swagger_auto_schema(
+        operation_description="Takes a set of user credentials and returns an access and refresh JSON web token pair",
+        responses={
+            status.HTTP_200_OK: openapi.Response(
+                description="Successful login",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'access': openapi.Schema(type=openapi.TYPE_STRING),
+                        'refresh': openapi.Schema(type=openapi.TYPE_STRING),
+                        'username': openapi.Schema(type=openapi.TYPE_STRING),
+                        'email': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            )
+        }
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         try:
@@ -27,6 +46,21 @@ class LoginView(TokenObtainPairView):
 
 
 class RefreshView(TokenRefreshView):
+
+    @swagger_auto_schema(
+        operation_description="Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid",
+        responses={
+            status.HTTP_200_OK: openapi.Response(
+                description="Successful token refresh",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'access': openapi.Schema(type=openapi.TYPE_STRING),
+                    }
+                )
+            )
+        }
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         try:
